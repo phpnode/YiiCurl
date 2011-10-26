@@ -1,0 +1,12 @@
+{
+	"name": "curl",
+	"description": "A curl wrapper for Yii, allows easier access to curl functions.",
+	"author": "Charles Pick",
+	"installationHash": null,
+	"type": "git",
+	"url": "git@github.com:phpnode\/YiiCurl.git",
+	"repositoryName": "local",
+	"dependencies": [
+		
+	]
+}

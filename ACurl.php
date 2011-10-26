@@ -1,4 +1,5 @@
 <?php
+Yii::import("packages.curl.*");
 /**
  * A wrapper that provides easy access to curl functions.
  * @author Charles Pick
