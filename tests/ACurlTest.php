@@ -1,4 +1,5 @@
 <?php
+Yii::import("packages.curl.*");
 /**
  * A series of tests for the ACurl class.
  * @see ACurl
@@ -36,7 +37,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testHeaders() {
 		$curl = new ACurl;
-		$response = $curl->head("http://facebook.com/")->exec();
+		$response = $curl->head("http://facebook.com/");
 		$this->assertEquals(2,$response->headers->count); // facebook.com always redirects to www.facebook.com
 		$this->assertEquals(301, $response->headers[0]->http_code);
 		$this->assertEquals(200, $response->headers[1]->http_code);
@@ -48,8 +49,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testToString() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->get("http://www.php.net/") instanceof ACurl);
-		$response = $curl->exec();
+		$response = $curl->get("http://www.php.net/");
 		$this->assertTrue($response instanceof ACurlResponse);
 		$this->assertTrue((bool) strstr($response,"downloads"));
 	}
@@ -60,8 +60,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testGetNoSuchDomain() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->get("http://404.php.net/") instanceof ACurl);
-		$response = $curl->exec();
+		$curl->get("http://404.php.net/");
 	}
 
 	/**
@@ -70,9 +69,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testGet404() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->get("http://www.google.com/arglebarcle") instanceof ACurl);
-		$response = $curl->exec();
-
+		$curl->get("http://www.google.com/arglebarcle");
 	}
 
 	/**
@@ -80,8 +77,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testGet() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->get("http://www.php.net/") instanceof ACurl);
-		$response = $curl->exec();
+		$response = $curl->get("http://www.php.net/");
 		$this->assertTrue($response instanceof ACurlResponse);
 		$this->assertTrue((bool) strstr($response->data,"downloads"));
 	}
@@ -91,8 +87,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testPostNonExistant() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->post("http://404.php.net/",array("test" => "test")) instanceof ACurl);
-		$response = $curl->exec();
+		$curl->post("http://404.php.net/",array("test" => "test"));
 	}
 
 	/**
@@ -101,42 +96,39 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testPost404() {
 		$curl = new ACurl;
-		$this->assertTrue($curl->post("http://www.google.com/404nosuchPAGE",array("test" => "test")) instanceof ACurl);
-		$response = $curl->exec();
+		$curl->post("http://www.google.com/404nosuchPAGE",array("test" => "test"));
 	}
 	/**
 	 * Tests the caching features.
-	 * Warning, assumes our cache is at least 10x as fast as google
+	 * Warning, assumes our cache is at least 5x as fast as google
 	 */
 	public function testCache() {
 		$curl = new ACurl;
 		$startTime = microtime(true);
-		$curl->cache(10)->get("http://www.google.com/")->exec();
+		$curl->cache(10)->get("http://www.google.com/");
 
 		$endTime = microtime(true);
 		$fetchTime = $endTime - $startTime;
-		//echo "Fetched in ".$fetchTime." seconds\n";
 		// make 1000 requests to google, they should all be cached
 		$startTime = microtime(true);
-		for ($i = 0; $i <= 1000; $i++) {
+		for ($i = 0; $i < 1000; $i++) {
 			$curl = new ACurl;
 
-			$curl->cache(10)->get("http://www.google.com/")->exec();
+			$curl->cache(10)->get("http://www.google.com/");
 
 		}
 		$endTime = microtime(true);
 
 		$totalTime = $endTime - $startTime;
-		//echo "1000 Fetched in ".$totalTime." seconds\n";
-		$this->assertTrue($totalTime / 100 < $fetchTime);
+		$this->assertLessThan($fetchTime, $totalTime / 200);
 	}
 	/**
 	 * Tests performing a http head request for a valid URL
 	 */
 	public function testHead() {
 		$curl = new ACurl;
-		$curl->head("http://www.php.net/");
-		$response = $curl->exec()->info;
+
+		$response = $curl->head("http://www.php.net/")->info;
 		$this->assertEquals("http://www.php.net/",$response->url);
 		$this->assertEquals("text/html;charset=utf-8",$response->content_type);
 		$this->assertEquals(200,$response->http_code);
@@ -149,8 +141,7 @@ class ACurlTest extends CTestCase {
 	 */
 	public function testHead404() {
 		$curl = new ACurl;
-		$curl->head("http://uk3.php.net/manual/en/arglebargle");
-		$response = $curl->exec()->info;
+		$response = $curl->head("http://uk3.php.net/manual/en/arglebargle")->info;
 		$this->assertEquals("text/html;charset=utf-8",$response->content_type);
 		$this->assertEquals(404,$response->http_code);
 

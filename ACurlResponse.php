@@ -10,21 +10,21 @@ class ACurlResponse extends CComponent {
 	 * @var ACurl
 	 */
 	public $request;
-		
+
 	/**
 	 * The actual data returned by curl.
 	 * @var string
 	 */
 	public $data;
-	
+
 	/**
 	 * Holds the information returned by the CURL request.
 	 * @see getInfo()
 	 * @see setInfo()
 	 * @var CAttributeCollection
 	 */
-	protected $_info;	
-	
+	protected $_info;
+
 	/**
 	 * Holds the header information returned by the CURL request.
 	 * @see getHeaders()
@@ -32,7 +32,7 @@ class ACurlResponse extends CComponent {
 	 * @var CTypedList
 	 */
 	protected $_headers;
-		
+
 	/**
 	 * Returns information about the CURL response.
 	 * @return CAttributeCollection the curl response details
@@ -60,6 +60,14 @@ class ACurlResponse extends CComponent {
 		}
 	}
 	/**
+	 * Gets the last headers returned by the response
+	 * @return CAttributeCollection the headers
+	 */
+	public function getLastHeaders() {
+		return $this->getHeaders()->itemAt(0);
+	}
+
+	/**
 	 * Gets the headers for this request.
 	 * @return CTypedList a typed list of attribute
 	 * collections representing each header.
@@ -67,7 +75,7 @@ class ACurlResponse extends CComponent {
 	public function getHeaders() {
 		return $this->_headers;
 	}
-	
+
 	/**
 	 * Sets the headers for this response.
 	 * @param mixed $headers The headers to set, can be a string or an array
@@ -98,7 +106,7 @@ class ACurlResponse extends CComponent {
 				}
 				$this->_headers[] = new CAttributeCollection($item, true);
 			}
-			
+
 		}
 		elseif (is_array($headers)) {
 			foreach($headers as $header) {
@@ -107,7 +115,7 @@ class ACurlResponse extends CComponent {
 		}
 		return $this; // chainable
 	}
-	
+
 	/**
 	 * Returns the response data when the object is cast to a string
 	 * @return string The response data
@@ -115,7 +123,7 @@ class ACurlResponse extends CComponent {
 	public function __toString() {
 		return $this->data;
 	}
-	
+
 	/**
 	 * Decodes a JSON response
 	 * @return mixed The decoded JSON object
@@ -127,6 +135,6 @@ class ACurlResponse extends CComponent {
 		else {
 			return CJSON::decode($this->data);
 		}
-		
+
 	}
 }

@@ -12,7 +12,7 @@
  * The properties are case insensitive and are automatically turned into the relevant
  * constant names.
  * The options are then applied to the ACurl object's curl handler by calling
- * the {@link applyTo()} method. 
+ * the {@link applyTo()} method.
  * @author Charles Pick
  * @package packages.curl
  */
@@ -35,9 +35,19 @@ class ACurlOptions extends CAttributeCollection {
 	 * echo $curl->options->getConstantName("ssl_verifypeer"); // outputs "CURLOPT_SSL_VERIFYPEER"
 	 * </pre>
 	 * @param string $name The name of the property
-	 * @return string the name of the constant 
+	 * @return string the name of the constant
 	 */
 	public function getConstantName($name) {
 		return "CURLOPT_".strtoupper($name);
+	}
+	/**
+	 * Adds a http header
+	 * @param string $key the header name to add
+	 * @param string $value the header value
+	 */
+	public function addHeader($key, $value) {
+		$headers = ($existing = $this->itemAt("httpHeader")) ? $existing : array();
+		$headers[] = $key.": ".$value;
+		$this->add("httpHeader",$headers);
 	}
 }

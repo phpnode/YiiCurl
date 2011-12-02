@@ -116,29 +116,25 @@ class ACurl extends CComponent {
 	}
 
 	/**
-	 * Sets the post data and the URL to post to and prepares the request
-	 * but does not actually perform the POST, exec() should be called to
-	 * perform the actual request.
+	 * Sets the post data and the URL to post to and performs the request
 	 * @param string $url The URL to post to.
 	 * @param array $data The data to post key=>value
-	 * @return ACurl $this with the POST and URL settings applied
+	 * @return ACurlResponse $this the curl response
 	 */
 	public function post($url, $data = array()) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->postfields = $data;
 		$this->getOptions()->post = true;
 		$this->prepareRequest();
-		return $this;
+		return $this->exec();
 	}
 
 
 	/**
-	 * Sets the PUT data and the URL to PUT to and prepares the request
-	 * but does not actually perform the PUT, exec() should be called to
-	 * perform the actual request.
+	 * Sets the PUT data and the URL to PUT to and performs the request
 	 * @param string $url The URL to PUT to.
 	 * @param array $data The data to PUT key=>value
-	 * @return ACurl $this with the PUT and URL settings applied
+	 * @return ACurlResponse $this the curl response
 	 */
 	public function put($url, $data = array()) {
 		$this->getOptions()->url = $url;
@@ -146,61 +142,57 @@ class ACurl extends CComponent {
 		$this->getOptions()->post = false;
 		$this->getOptions()->customRequest = "PUT";
 		$this->prepareRequest();
-		return $this;
+		return $this->exec();
 	}
 
 	/**
-	 * Sets the DELETE data and the URL to DELETE to and prepares the request
-	 * but does not actually perform the DELETE, exec() should be called to
-	 * perform the actual request.
+	 * Sets the DELETE data and the URL to DELETE to and performs the request
 	 * @param string $url The URL to DELETE to.
-	 * @return ACurl $this with the DELETE and URL settings applied
+	 * @return ACurlResponse $this the curl response
 	 */
 	public function delete($url) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->customRequest = "DELETE";
 		$this->prepareRequest();
-		return $this;
+		return $this->exec();
 	}
 
 
 	/**
-	 * Sets the URL and prepares the GET request
-	 * but does not actually perform the GET, exec() should be called to
+	 * Sets the URL and performs the GET request
 	 * perform the actual request.
 	 * @param string $url The URL to get.
-	 * @return ACurl $this with the URL settings applied
+	 * @return ACurlResponse $this the curl response
 	 */
 	public function get($url) {
 		$this->getOptions()->url = $url;
 
 		$this->getOptions()->post = false;
 		$this->prepareRequest();
-		return $this;
+		return $this->exec();
 	}
 	/**
-	 * Sets the URL and prepares the HEAD request
-	 * but does not actually perform the HEAD, exec() should be called to
-	 * perform the actual request.
+	 * Sets the URL and performs the HEAD request
 	 * @param string $url The URL to post to.
-	 * @return ACurl $this with the URL and relevant curl settings applied
+	 * @return ACurlResponse $this the curl response
 	 */
 	public function head($url) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->nobody = true;
 		$this->prepareRequest();
-		return $this;
+		return $this->exec();
 	}
 
 	/**
 	 * Executes the request and returns the response.
 	 * @return ACurlResponse the wrapped curl response
 	 */
-	public function exec() {
+	protected function exec() {
 		$response = new ACurlResponse;
 		$response->request = $this;
 		$data = false;
 		$cache = $this->_cache;
+
 		if ($this->getOptions()->itemAt("post") || $this->getOptions()->itemAt("customRequest")) {
 			$cache = false;
 		}
@@ -208,6 +200,7 @@ class ACurl extends CComponent {
 			$data = $this->getCacheComponent()->get($this->getCacheKey());
 		}
 		if ($data === false) {
+
 			$data = curl_exec($this->getHandle());
 			if ($cache) {
 				$this->getCacheComponent()->set($this->getCacheKey(),$this->_cacheDuration,$this->_cacheDependency);
