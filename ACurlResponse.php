@@ -137,4 +137,15 @@ class ACurlResponse extends CComponent {
 		}
 
 	}
+	/**
+	 * Determines whether this response is a HTTP error or not.
+	 * @return boolean true if it's an error
+	 */
+	public function getIsError() {
+		$lastHeader = $this->getLastHeaders();
+		if (!is_object($lastHeader) || !isset($lastHeader->http_code)) {
+			return true;
+		}
+		return $lastHeader->http_code > 399;
+	}
 }
