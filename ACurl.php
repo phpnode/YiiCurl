@@ -219,7 +219,7 @@ class ACurl extends CComponent {
 				$response->data = false;
 			}
 		}
-		if ($response->getIsError()) {
+		if ($response->getIsError() && $response->getLastHeaders() !== false) {
 			throw new ACurlException($response->getLastHeaders()->http_code,"Curl Error: ".$response->getLastHeaders()->http_code,$response);
 		}
 		if (curl_error($this->getHandle())) {

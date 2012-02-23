@@ -64,7 +64,10 @@ class ACurlResponse extends CComponent {
 	 * @return CAttributeCollection the headers
 	 */
 	public function getLastHeaders() {
-		return $this->getHeaders()->itemAt(0);
+		if ($this->getHeaders()->count() > 0) {
+			return $this->getHeaders()->itemAt(0);
+		}
+		return false;
 	}
 
 	/**
