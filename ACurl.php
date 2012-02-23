@@ -191,7 +191,7 @@ class ACurl extends CComponent {
 	 * @return ACurlResponse|false the wrapped curl response, or false if the request is stopped by beforeRequest()
 	 * @throws ACurlException a curl exception if there was a probl
 	 */
-	protected function exec() {
+	public function exec() {
 		$response = new ACurlResponse;
 		$response->request = $this;
 		$data = false;
