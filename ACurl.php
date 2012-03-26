@@ -119,11 +119,11 @@ class ACurl extends CComponent {
 	 * Sets the post data and the URL to post to and performs the request
 	 * @param string $url The URL to post to.
 	 * @param array $data The data to post key=>value
-	 * @return ACurlResponse $this the curl response
+	 * @return ACurlResponse the curl response
 	 */
 	public function post($url, $data = array()) {
 		$this->getOptions()->url = $url;
-		$this->getOptions()->postfields = $data;
+		$this->getOptions()->postfields = is_array($data) ? http_build_query($data) : $data;;
 		$this->getOptions()->post = true;
 		$this->prepareRequest();
 		return $this->exec();
@@ -134,11 +134,11 @@ class ACurl extends CComponent {
 	 * Sets the PUT data and the URL to PUT to and performs the request
 	 * @param string $url The URL to PUT to.
 	 * @param array $data The data to PUT key=>value
-	 * @return ACurlResponse $this the curl response
+	 * @return ACurlResponse the curl response
 	 */
 	public function put($url, $data = array()) {
 		$this->getOptions()->url = $url;
-		$this->getOptions()->postfields = $data;
+		$this->getOptions()->postfields = is_array($data) ? http_build_query($data) : $data;
 		$this->getOptions()->post = false;
 		$this->getOptions()->customRequest = "PUT";
 		$this->prepareRequest();
@@ -148,7 +148,7 @@ class ACurl extends CComponent {
 	/**
 	 * Sets the DELETE data and the URL to DELETE to and performs the request
 	 * @param string $url The URL to DELETE to.
-	 * @return ACurlResponse $this the curl response
+	 * @return ACurlResponse the curl response
 	 */
 	public function delete($url) {
 		$this->getOptions()->url = $url;
@@ -162,7 +162,7 @@ class ACurl extends CComponent {
 	 * Sets the URL and performs the GET request
 	 * perform the actual request.
 	 * @param string $url The URL to get.
-	 * @return ACurlResponse $this the curl response
+	 * @return ACurlResponse the curl response
 	 */
 	public function get($url) {
 		$this->getOptions()->url = $url;
@@ -174,7 +174,7 @@ class ACurl extends CComponent {
 	/**
 	 * Sets the URL and performs the HEAD request
 	 * @param string $url The URL to post to.
-	 * @return ACurlResponse $this the curl response
+	 * @return ACurlResponse the curl response
 	 */
 	public function head($url) {
 		$this->getOptions()->url = $url;
