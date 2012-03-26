@@ -83,7 +83,6 @@ class ACurl extends CComponent {
 				"header" => true,
 				"followLocation" => true,
 				"returnTransfer" => true,
-				"failOnError" => true,
 				"timeout" => 30,
 				"encoding" => "gzip",
 				"ssl_verifypeer" => false,
@@ -119,14 +118,15 @@ class ACurl extends CComponent {
 	 * Sets the post data and the URL to post to and performs the request
 	 * @param string $url The URL to post to.
 	 * @param array $data The data to post key=>value
-	 * @return ACurlResponse the curl response
+	 * @param boolean $execute whether to execute the request immediately or not, defaults to true
+	 * @return ACurlResponse|ACurl the curl response, or $this if $execute is set to false
 	 */
-	public function post($url, $data = array()) {
+	public function post($url, $data = array(), $execute = true) {
 		$this->getOptions()->url = $url;
-		$this->getOptions()->postfields = is_array($data) ? http_build_query($data) : $data;;
+		$this->getOptions()->postfields = is_string($data) ? $data : http_build_query($data);
 		$this->getOptions()->post = true;
 		$this->prepareRequest();
-		return $this->exec();
+		return $execute ? $this->exec() : $this;
 	}
 
 
@@ -134,27 +134,29 @@ class ACurl extends CComponent {
 	 * Sets the PUT data and the URL to PUT to and performs the request
 	 * @param string $url The URL to PUT to.
 	 * @param array $data The data to PUT key=>value
-	 * @return ACurlResponse the curl response
+	 * @param boolean $execute whether to execute the request immediately or not, defaults to true
+	 * @return ACurlResponse|ACurl the curl response, or $this if $execute is set to false
 	 */
-	public function put($url, $data = array()) {
+	public function put($url, $data = array(), $execute = true) {
 		$this->getOptions()->url = $url;
-		$this->getOptions()->postfields = is_array($data) ? http_build_query($data) : $data;
+		$this->getOptions()->postfields = is_string($data) ? $data : http_build_query($data);
 		$this->getOptions()->post = false;
 		$this->getOptions()->customRequest = "PUT";
 		$this->prepareRequest();
-		return $this->exec();
+		return $execute ? $this->exec() : $this;
 	}
 
 	/**
 	 * Sets the DELETE data and the URL to DELETE to and performs the request
 	 * @param string $url The URL to DELETE to.
-	 * @return ACurlResponse the curl response
+	 * @param boolean $execute whether to execute the request immediately or not, defaults to true
+	 * @return ACurlResponse|ACurl the curl response, or $this if $execute is set to false
 	 */
-	public function delete($url) {
+	public function delete($url, $execute = true) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->customRequest = "DELETE";
 		$this->prepareRequest();
-		return $this->exec();
+		return $execute ? $this->exec() : $this;
 	}
 
 
@@ -162,37 +164,41 @@ class ACurl extends CComponent {
 	 * Sets the URL and performs the GET request
 	 * perform the actual request.
 	 * @param string $url The URL to get.
-	 * @return ACurlResponse the curl response
+	 * @param boolean $execute whether to execute the request immediately or not, defaults to true
+	 * @return ACurlResponse|ACurl the curl response, or $this if $execute is set to false
 	 */
-	public function get($url) {
+	public function get($url, $execute = true) {
 		$this->getOptions()->url = $url;
-
 		$this->getOptions()->post = false;
 		$this->prepareRequest();
-		return $this->exec();
+		return $execute ? $this->exec() : $this;
 	}
 	/**
 	 * Sets the URL and performs the HEAD request
 	 * @param string $url The URL to post to.
-	 * @return ACurlResponse the curl response
+	 * @param boolean $execute whether to execute the request immediately or not, defaults to true
+	 * @return ACurlResponse|ACurl the curl response, or $this if $execute is set to false
 	 */
-	public function head($url) {
+	public function head($url, $execute = true) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->nobody = true;
 		$this->prepareRequest();
-		return $this->exec();
+		return $execute ? $this->exec() : $this;
 	}
 
 	/**
 	 * Executes the request and returns the response.
-	 * @return ACurlResponse the wrapped curl response
+	 * @return ACurlResponse|false the wrapped curl response, or false if the request is stopped by beforeRequest()
+	 * @throws ACurlException a curl exception if there was a probl
 	 */
-	protected function exec() {
+	public function exec() {
 		$response = new ACurlResponse;
 		$response->request = $this;
 		$data = false;
+		if (!$this->beforeRequest()) {
+			return false;
+		}
 		$cache = $this->_cache;
-
 		if ($this->getOptions()->itemAt("post") || $this->getOptions()->itemAt("customRequest")) {
 			$cache = false;
 		}
@@ -200,14 +206,12 @@ class ACurl extends CComponent {
 			$data = $this->getCacheComponent()->get($this->getCacheKey());
 		}
 		if ($data === false) {
-
 			$data = curl_exec($this->getHandle());
 			if ($cache) {
 				$this->getCacheComponent()->set($this->getCacheKey(),$this->_cacheDuration,$this->_cacheDependency);
 			}
 		}
 		$response->data = $data;
-
 		if ($this->getOptions()->header) {
 			$response->headers = mb_substr($response->data, 0, $response->info->header_size);
 			$response->data = mb_substr($response->data, $response->info->header_size);
@@ -215,10 +219,13 @@ class ACurl extends CComponent {
 				$response->data = false;
 			}
 		}
+		if ($response->getIsError() && $response->getLastHeaders() !== false) {
+			throw new ACurlException($response->getLastHeaders()->http_code,"Curl Error: ".$response->getLastHeaders()->http_code,$response);
+		}
 		if (curl_error($this->getHandle())) {
 			throw new ACurlException(curl_errno($this->getHandle()),curl_error($this->getHandle()), $response);
 		}
-
+		$this->afterRequest($response);
 		return $response;
 	}
 
@@ -273,5 +280,45 @@ class ACurl extends CComponent {
 		}
 		return $this->_cacheKey;
 	}
-
+	/**
+	 * This method is invoked before making a curl request.
+	 * The default implementation raises the {@link onBeforeRequest} event.
+	 * @return boolean whether the event is valid and the request should continue
+	 */
+	protected function beforeRequest() {
+		if($this->hasEventHandler('onBeforeRequest'))
+		{
+			$event=new CModelEvent($this);
+			$this->onBeforeRequest($event);
+			return $event->isValid;
+		}
+		else
+			return true;
+	}
+	/**
+	 * This event is raised before the curl request is made
+	 * @param CModelEvent $event the event parameter
+	 */
+	public function onBeforeRequest($event) {
+		$this->raiseEvent('onBeforeRequest',$event);
+	}
+	/**
+	 * This method is invoked after a curl request.
+	 * The default implementation raises the {@link onAfterRequest} event.
+	 * @param ACurlResponse $response the curl response
+	 */
+	protected function afterRequest(ACurlResponse $response) {
+		if ($this->hasEventHandler('onAfterRequest')) {
+			$event = new CModelEvent();
+			$event->params['response'] = $response;
+			$this->onAfterRequest($event);
+		}
+	}
+	/**
+	 * This event is raised after the curl request is made
+	 * @param CModelEvent $event the event parameter
+	 */
+	public function onAfterRequest($event) {
+		$this->raiseEvent('onBeforeRequest',$event);
+	}
 }

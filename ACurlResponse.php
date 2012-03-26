@@ -64,7 +64,10 @@ class ACurlResponse extends CComponent {
 	 * @return CAttributeCollection the headers
 	 */
 	public function getLastHeaders() {
-		return $this->getHeaders()->itemAt(0);
+		if ($this->getHeaders()->count() > 0) {
+			return $this->getHeaders()->itemAt(0);
+		}
+		return false;
 	}
 
 	/**
@@ -136,5 +139,16 @@ class ACurlResponse extends CComponent {
 			return CJSON::decode($this->data);
 		}
 
+	}
+	/**
+	 * Determines whether this response is a HTTP error or not.
+	 * @return boolean true if it's an error
+	 */
+	public function getIsError() {
+		$lastHeader = $this->getLastHeaders();
+		if (!is_object($lastHeader) || !isset($lastHeader->http_code)) {
+			return true;
+		}
+		return $lastHeader->http_code > 399;
 	}
 }
