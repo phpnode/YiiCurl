@@ -61,14 +61,14 @@ class ACurlResponse extends CComponent {
 	}
 	/**
 	 * Gets the last headers returned by the response
-	 * @return CAttributeCollection the headers
+	 * @return CAttributeCollection|boolean the headers or false if there were no headers returned
 	 */
 	public function getLastHeaders() {
 		if (!$this->_headers)
 			return false;
-		if ($this->getHeaders()->count() > 0) {
+		if ($this->getHeaders()->count() > 0)
 			return $this->getHeaders()->itemAt(0);
-		}
+		
 		return false;
 	}
 
@@ -134,7 +134,7 @@ class ACurlResponse extends CComponent {
 	 * @return mixed The decoded JSON object
 	 */
 	public function fromJSON() {
-		if (function_exists("json_exists")) {
+		if (function_exists("json_decode")) {
 			return json_decode($this->data);
 		}
 		else {
