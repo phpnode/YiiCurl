@@ -3,7 +3,7 @@ Yii::import("packages.curl.*");
 /**
  * A series of tests for the ACurl class.
  * @see ACurl
- * @package application.tests.unit
+ * @package packages.curl.tests
  * @author Charles Pick
  */
 class ACurlTest extends CTestCase {
