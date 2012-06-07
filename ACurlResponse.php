@@ -68,7 +68,7 @@ class ACurlResponse extends CComponent {
 			return false;
 		if ($this->getHeaders()->count() > 0)
 			return $this->getHeaders()->itemAt(0);
-		
+
 		return false;
 	}
 
@@ -131,14 +131,15 @@ class ACurlResponse extends CComponent {
 
 	/**
 	 * Decodes a JSON response
+	 * @param boolean $forceArray whether to force the returned object to be an array or not
 	 * @return mixed The decoded JSON object
 	 */
-	public function fromJSON() {
+	public function fromJSON($forceArray = true) {
 		if (function_exists("json_decode")) {
-			return json_decode($this->data);
+			return json_decode($this->data, $forceArray);
 		}
 		else {
-			return CJSON::decode($this->data);
+			return CJSON::decode($this->data, $forceArray);
 		}
 
 	}
