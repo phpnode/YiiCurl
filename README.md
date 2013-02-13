@@ -1,3 +1,9 @@
+# NOTE: No Longer Maintained
+
+This package is no longer being maintained, use http://guzzlephp.org/ instead!
+
+-----------------------------------------------------------------
+
 #### Introduction
 
 A curl wrapper for Yii, allows easier access to curl functions.
