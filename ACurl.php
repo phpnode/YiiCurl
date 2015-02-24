@@ -140,7 +140,7 @@ class ACurl extends CComponent {
 	public function put($url, $data = array(), $execute = true) {
 		$this->getOptions()->url = $url;
 		$this->getOptions()->postfields = is_string($data) ? $data : http_build_query($data);
-		$this->getOptions()->post = false;
+		$this->getOptions()->post = true;
 		$this->getOptions()->customRequest = "PUT";
 		$this->prepareRequest();
 		return $execute ? $this->exec() : $this;
