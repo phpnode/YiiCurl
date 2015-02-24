@@ -208,7 +208,7 @@ class ACurl extends CComponent {
 		if ($data === false) {
 			$data = curl_exec($this->getHandle());
 			if ($cache) {
-				$this->getCacheComponent()->set($this->getCacheKey(),$this->_cacheDuration,$this->_cacheDependency);
+				$this->getCacheComponent()->set($this->getCacheKey(),$data,$this->_cacheDuration,$this->_cacheDependency);
 			}
 		}
 		$response->data = $data;
